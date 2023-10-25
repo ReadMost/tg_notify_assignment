@@ -95,6 +95,7 @@ services:
       - "./redis_data:/bitnami/redis/data"
     environment:
       - "REDIS_PORT_NUMBER=${REDIS_PORT}"
+      - "ALLOW_EMPTY_PASSWORD=yes"
     sysctls:
       net.core.somaxconn: 1024
     restart: always
