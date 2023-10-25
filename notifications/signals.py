@@ -23,7 +23,7 @@ def save_customer_balance_change(sender, instance, **kwargs):
         logger.error(e)
 
 @receiver(post_save, sender=Customer)
-def save_customer_balance_change(sender, instance, created, **kwargs):
+def save_customer_setting(sender, instance, created, **kwargs):
     if created:
         CustomerNotificationSetting.objects.create(
             customer=instance
