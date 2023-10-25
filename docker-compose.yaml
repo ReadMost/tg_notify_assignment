@@ -7,6 +7,7 @@ x-common-properties: &app-body
     - "app_network"
   volumes:
     - ".:/usr/src/app"
+    - "staticfiles_local:/usr/src/app/static"
   depends_on:
     - redis
   logging:
@@ -26,6 +27,7 @@ services:
       - "PROXY_PASS=http://app:8000"
     volumes:
       - "../infra/nginx/conf.d:/etc/nginx/conf.d/templates"
+      - "staticfiles_local:/static"
     networks:
       - "app_network"
     labels:
@@ -41,7 +43,7 @@ services:
     <<: *app-body
     ports:
       - ${DJANGO_PORT}:8000
-    command: bash -c "python manage.py runserver [::]:8000"
+    command: bash -c "python3 manage.py collectstatic --noinput && python manage.py runserver [::]:8000"
 
   tg_bot:
     <<: *app-body
@@ -108,7 +110,7 @@ networks:
       name: "${NETWORK_NAME}"
 
 
-#volumes:
-#  staticfiles_local:
-#    external:
-#      name: "${STATIC_FILES}"
+volumes:
+  staticfiles_local:
+    external:
+      name: "${STATIC_FILES}"

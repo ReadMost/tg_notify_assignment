@@ -21,7 +21,7 @@ services:
     <<: *app-body
     ports:
       - ${DJANGO_PORT}:8000
-    command: bash -c "python manage.py runserver [::]:8000"
+    command: bash -c "python3 manage.py collectstatic --noinput && python manage.py runserver [::]:8000"
 
   tg_bot:
     <<: *app-body
