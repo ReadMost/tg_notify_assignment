@@ -1,0 +1,66 @@
+version: '3.3'
+
+x-common-properties: &app-body
+  image: "${APP_NAME}"
+  restart: "always"
+  networks:
+    - "app_network"
+  volumes:
+    - ".:/usr/src/app"
+  depends_on:
+    - redis
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+services:
+
+  app:
+    <<: *app-body
+    ports:
+      - ${DJANGO_PORT}:8000
+    command: bash -c "python manage.py runserver [::]:8000"
+
+  tg_bot:
+    <<: *app-body
+    command: bash -c "python manage.py bot"
+
+  celery-worker:
+    <<: *app-body
+    command: bash -c "make run_celery_worker"
+
+  celery_beat:
+    <<: *app-body
+    command: bash -c "make run_celery_beat"
+
+#  flower:
+#    <<: *app-body
+#    ports:
+#      - "${FLOWER_PORT}:${FLOWER_PORT}"
+#    command: bash -c "make run_flower"
+
+
+
+  redis:
+    image: "bitnami/redis:6.0.9"
+    networks:
+      - "app_network"
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - "./redis_data:/bitnami/redis/data"
+    environment:
+      - "REDIS_PORT_NUMBER=${REDIS_PORT}"
+      - "ALLOW_EMPTY_PASSWORD=yes"
+    sysctls:
+      net.core.somaxconn: 1024
+    restart: always
+    command: "/opt/bitnami/scripts/redis/run.sh --maxmemory 300mb"
+
+
+networks:
+  app_network:
+    external:
+      name: "${NETWORK_NAME}"
